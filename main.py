@@ -33,25 +33,41 @@ class Variable:
         else:
             return not self.value
     
+def CreateDict():
+    data = {}
+    for x in range(1,10):
+        for y in range(1,10):
+            for val in range(1,10):
+                data[str.format("x {} {} {}",x,y,val)] = {"value": Variable(), "clause": []}
+                data[str.format("!x {} {} {}",x,y,val)] = {"value": Variable(True), "clause": []}
+    return data
 
-data = {
-    # Pour la variable à la ligne 1, colonne 1 pour le chiffre 1
-    "x111": {
-        "value": Variable(),
-        # Liste de toutes les clauses dans laquel la variable est présente
-        "clause": []
-    },
-    # Pour la négation de la variable à la ligne 1, colonne 1 pour le chiffre 1
-    "!x111": {
-        "value": Variable(True),
-        "clause": []
-    },
-    "x112": {
-        "value": Variable(),
-        "clause": []
-    },
-    "!x112": {
-        "value": Variable(True),
-        "clause": []
-    }
-}
+def GenClause(data:dict):
+    clauseList = []
+    eachCell(data)
+    eachRow(data)
+    eachColumn(data)
+    eachSquare(data)
+    return clauseList
+
+def eachCell(data:dict):
+    for i in range(1,10):
+        for j in range(1,10):
+            listVarClause = []
+            for key, value in data.items():
+                s = str.split(key)
+                if s[1] == str(i) and s[2] == str(j):
+                    listVarClause.append(value.value)
+
+
+def eachRow(data:dict):
+    pass
+
+def eachColumn(data:dict):
+    pass
+
+def eachSquare(data:dict):
+    pass
+
+data = CreateDict()
+GenClause(data)
