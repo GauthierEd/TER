@@ -1,4 +1,5 @@
 # https://www2.cs.sfu.ca/CourseCentral/827/havens/papers/topic%237(NoGoodLearning)/Clause%20Watching/ws-sat02-b.pdf
+import itertools as it
 
 # Objet qui represente une clause, contient la liste des variables de la clauses
 class Clause:
@@ -15,22 +16,24 @@ class Clause:
 
 # Objet qui represente une variable, contient sa valeur et s'il est une négation ou pas
 class Variable:
-    def __init__(self, isNot = False):
+    def __init__(self, name, isNot = False):
+        # Nom de la variable
+        self.name = name
         # Valeur de la variable, None si pas initialisé, 1 pour vrai, -1 pour faux
         self.value = None
         # Booleen pour savoir si variable est x111 ou !x111 pour calculer sa valeur
         self.isNot = isNot
     
     def __repr__(self) -> str:
-        return(f'Valeur: {self.getValue()}, isNot: {self.isNot}')
+        return(f'Nom: {self.name}, Valeur: {self.getValue()}, isNot: {self.isNot}')
 
     def setValue(self, value):
         self.value = value
     
     def getValue(self):
-        if not self.isNot:
+        if not self.isNot or self.value == None:
             return self.value
-        else:
+        else :
             return not self.value
     
 def CreateDict():
@@ -38,34 +41,45 @@ def CreateDict():
     for x in range(1,10):
         for y in range(1,10):
             for val in range(1,10):
-                data[str.format("x {} {} {}",x,y,val)] = {"value": Variable(), "clause": []}
-                data[str.format("!x {} {} {}",x,y,val)] = {"value": Variable(True), "clause": []}
+                name = str.format("x {} {} {}",x,y,val)
+                data[name] = {"value": Variable(name), "clause": []}
+                data["!"+name] = {"value": Variable("!"+name,True), "clause": []}
     return data
 
 def GenClause(data:dict):
-    clauseList = []
-    eachCell(data)
+    listClause = []
+    for x in range(1,10):
+        for y in range(1,10):
+            eachCell(x,y,data,listClause)
     eachRow(data)
     eachColumn(data)
     eachSquare(data)
-    return clauseList
 
-def eachCell(data:dict):
-    for i in range(1,10):
-        for j in range(1,10):
-            listVarClause = []
-            for key, value in data.items():
-                s = str.split(key)
-                if s[1] == str(i) and s[2] == str(j):
-                    listVarClause.append(value.value)
+# Dans chaque case, il y a un chiffre et un seul
+def eachCell(x:int,y:int,data:dict,list:list):
+    listVar = []
+    listVarNot = []
+    for val in range(1,10):
+        listVar.append(data[str.format("x {} {} {}",x,y,val)]['value'])
+        listVarNot.append(data[str.format("!x {} {} {}",x,y,val)]['value'])
+    clause = Clause(listVar)
+    list.append(clause)
+    for var in listVar:
+        data[var.name]['clause'].append(clause)
+    for listClause in it.combinations(listVarNot,2):
+        list.append(Clause(listClause))
+        for var in listClause:
+            data[var.name]['clause'].append(clause)
 
-
+# Dans chaque ligne, chaque chiffre doit apparaître 1 fois et une seule
 def eachRow(data:dict):
     pass
 
+# Dans chaque colonne, chaque chiffre doit apparaître 1 fois et une seule
 def eachColumn(data:dict):
     pass
 
+# Dans chaque carré, chaque chiffre doit apparaître 1 fois et une seule
 def eachSquare(data:dict):
     pass
 
