@@ -12,6 +12,9 @@ class Clause:
         self.nb_litteraux_satis = 0
         # Une clause est insatisfaite si nb_litteraux_nsatis == nb_littéraux de la clause
         self.nb_literraux_nsatis = 0
+
+    def __repr__(self) -> str:
+        return("^".join(self.list_litteraux))
     
     def isSatisfy(self):
         pass
@@ -31,13 +34,13 @@ class Variable:
         self.value = value
     
     def getValue(self):
-        if not self.isNot:
+        if not self.isNot or self.value == None:
             return self.value
         else:
             return not self.value
     
 def dpll(data, litteral = None):
-    # litteral sous la forme : "x 1 1 1" ou "!x 1 1 1"
+    print("litteral", litteral)
     clause_empty = []
     clause_uni = set()
     if litteral != None:
@@ -45,46 +48,61 @@ def dpll(data, litteral = None):
     # Propagation unitaire
     # Recherche de toutes les clauses unitaires
     for key in data:
-        for clause in data[key].clause:
+        for clause in data[key]["clause"]:
             if len(clause.list_litteraux) == 1:
                 clause_uni.add(clause)
     for clause in clause_uni:
         litt = clause.list_litteraux[0]
         if "!" in litt:
             # Met !x à faux
-            data[litt].value.setValue(False)
+            data[litt]["value"].setValue(False)
             # Supprime toutes les clauses où !x apparait car elles sont satisfaites
-            for clause in data[litt].clause:
+            for clause in list(data[litt]["clause"]):
                 clause_litt = clause.list_litteraux
                 for l in clause_litt:
-                    data[l].clause.remove(clause)
+                    data[l]["clause"].remove(clause)
+                    
             # Supprime x dans toutes les clauses où il apparait
             inv_litt = litt.split("!")[1]
-            for clause in data[inv_litt].clause:
+            data[inv_litt]["value"].setValue(False)
+            for clause in list(data[inv_litt]["clause"]):
+                # On supprimer aussi x des autres clauses car ils sont passé en copy dans le dict
+                """for l in list(clause.list_litteraux):
+                    for clause_l in data[l]["clause"]:
+                        if l in clause_l.list_litteraux:
+                            clause_l.list_litteraux.remove(l)"""
                 clause.list_litteraux.remove(inv_litt)
                 # Si la clause est vide, on la garde en mémoire
                 if len(clause.list_litteraux) == 0:
                     clause_empty.append(clause)
+            data[inv_litt]["clause"] = []
+           
         else:
             # Met x à vrai
-            data[litt].value.setValue(True)
+            data[litt]["value"].setValue(True)
             # Supprime toutes les clauses où x apparait car elles sont satisfaites
-            for clause in data[litt].clause:
+            for clause in list(data[litt]["clause"]):
                 clause_litt = clause.list_litteraux
                 for l in clause_litt:
-                    data[l].clause.remove(clause)
+                    data[l]["clause"].remove(clause)
             # Supprime !x dans toutes les clauses où il apparait
             inv_litt = "!" + litt
-            for clause in data[inv_litt].clause:
+            data[inv_litt]["value"].setValue(True)
+            for clause in list(data[inv_litt]["clause"]):
+                # On supprimer aussi x des autres clauses car ils sont passé en copy dans le dict
+                """for l in list(clause.list_litteraux):
+                    for clause_l in data[l]["clause"]:
+                        if l in clause_l.list_litteraux:
+                            clause_l.list_litteraux.remove(l)"""
                 clause.list_litteraux.remove(inv_litt)
                 # Si la clause est vide, on la garde en mémoire
                 if len(clause.list_litteraux) == 0:
                     clause_empty.append(clause)
-
+            data[inv_litt]["clause"] = []
     # Test si il y a plus de clause
     isEmpty = True
     for key in data:
-        if len(data[key].clause) > 0:
+        if len(data[key]["clause"]) > 0:
             isEmpty = False
     if isEmpty:
         return data
@@ -95,8 +113,9 @@ def dpll(data, litteral = None):
             
     # On choisit un litteral, on prends le 1er litteral qui n'a pas encore de valeur associé
     for key in data:
-        if data[key].value.getValue() == None and len(data[key].clause) > 0:
+        if data[key]["value"].getValue() == None and len(data[key]["clause"]) > 0:
             new_litteral = key
+            break
     
     result = dpll(deepcopy(data), new_litteral)
     if result:
@@ -106,4 +125,42 @@ def dpll(data, litteral = None):
         return result
     else:
         return False
-    
+
+#### ENSEMBLE DE CLAUSE DE TEST #####
+c1 = Clause(["x 1", "x 2", "!x 3"])
+c2 = Clause(["!x 1", "x 2", "x 3"])
+c3 = Clause(["!x 2"])
+c4 = Clause(["x 2", "x 3"])
+c5 = Clause(["x 1", "!x 2"])
+test = {
+    "x 1":{
+        "value": Variable(),
+        "clause": [c1, c5]
+    },
+    "!x 1":{
+        "value": Variable(True),
+        "clause": [c2]
+    },
+    "x 2":{
+        "value": Variable(),
+        "clause": [c1, c2, c4]
+    },
+    "!x 2":{
+        "value": Variable(True),
+        "clause": [c3, c5]
+    },
+    "x 3":{
+        "value": Variable(),
+        "clause": [c2, c4]
+    },
+    "!x 3":{
+        "value": Variable(True),
+        "clause": [c1]
+    }
+}
+
+result_dpll = dpll(test)
+if not result_dpll:
+    print("Pas de modele")
+else:
+    print(result_dpll)
