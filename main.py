@@ -47,8 +47,8 @@ def dpll(data, litteral = None):
         clause_uni.add(Clause([litteral]))
     # Propagation unitaire
     # Recherche de toutes les clauses unitaires
-    for key in data:
-        for clause in data[key]["clause"]:
+    for key, value in data.items():
+        for clause in value["clause"]:
             if len(clause.list_litteraux) == 1:
                 clause_uni.add(clause)
     for clause in clause_uni:
@@ -99,10 +99,31 @@ def dpll(data, litteral = None):
                 if len(clause.list_litteraux) == 0:
                     clause_empty.append(clause)
             data[inv_litt]["clause"] = []
+
+    #### LITTERAUX PURE ####
+    all_values = list(test.values())
+    for i in range(0,len(all_values), 2):
+        x_values = all_values[i]
+        notX_values = all_values[i+1]
+        if len(x_values["clause"]) == 0 and len(notX_values["clause"]) > 0:
+            notX_values["value"].setValue(False)
+            # Supprime toutes les clauses où !x apparait car elles sont satisfaites
+            for clause in list(notX_values["clause"]):
+                clause_litt = clause.list_litteraux
+                for l in clause_litt:
+                    data[l]["clause"].remove(clause)
+        elif len(x_values["clause"]) > 0 and len(notX_values["clause"]) == 0:
+            x_values["value"].setValue(True)
+            # Supprime toutes les clauses où x apparait car elles sont satisfaites
+            for clause in list(x_values["clause"]):
+                clause_litt = clause.list_litteraux
+                for l in clause_litt:
+                    data[l]["clause"].remove(clause)
+
     # Test si il y a plus de clause
     isEmpty = True
-    for key in data:
-        if len(data[key]["clause"]) > 0:
+    for key, value in data.items():
+        if len(value["clause"]) > 0:
             isEmpty = False
     if isEmpty:
         return data
@@ -112,8 +133,8 @@ def dpll(data, litteral = None):
         return False
             
     # On choisit un litteral, on prends le 1er litteral qui n'a pas encore de valeur associé
-    for key in data:
-        if data[key]["value"].getValue() == None and len(data[key]["clause"]) > 0:
+    for key, value in data.items():
+        if value["value"].getValue() == None and len(value["clause"]) > 0:
             new_litteral = key
             break
     
@@ -158,6 +179,7 @@ test = {
         "clause": [c1]
     }
 }
+
 
 result_dpll = dpll(test)
 if not result_dpll:
