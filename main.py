@@ -46,14 +46,20 @@ def CreateDict():
                 data["!"+name] = {"value": Variable("!"+name,True), "clause": []}
     return data
 
-def GenClause(data:dict):
-    listClause = []
+def GenClause(data:dict,listClause:list):
     for x in range(1,10):
         for y in range(1,10):
             eachCell(x,y,data,listClause)
-    eachRow(data)
-    eachColumn(data)
-    eachSquare(data)
+    for x in range(1,10):
+        for val in range(1,10):
+            eachRow(x,val,data,listClause)
+    for y in range(1,10):
+        for val in range(1,10):
+            eachColumn(y,val,data,listClause)
+    for xSquare in range(1,10,3):
+        for ySquare in range(1,10,3):
+            for val in range(1,10):
+                eachSquare(xSquare,ySquare,val,data,listClause)
 
 # Dans chaque case, il y a un chiffre et un seul
 def eachCell(x:int,y:int,data:dict,list:list):
@@ -72,16 +78,55 @@ def eachCell(x:int,y:int,data:dict,list:list):
             data[var.name]['clause'].append(clause)
 
 # Dans chaque ligne, chaque chiffre doit apparaître 1 fois et une seule
-def eachRow(data:dict):
-    pass
+def eachRow(x:int,val:int,data:dict,list:list):
+    listVar = []
+    listVarNot = []
+    for y in range(1,10):
+        listVar.append(data[str.format("x {} {} {}",x,y,val)]['value'])
+        listVarNot.append(data[str.format("!x {} {} {}",x,y,val)]['value'])
+    clause = Clause(listVar)
+    list.append(clause)
+    for var in listVar:
+        data[var.name]['clause'].append(clause)
+    for listClause in it.combinations(listVarNot,2):
+        list.append(Clause(listClause))
+        for var in listClause:
+            data[var.name]['clause'].append(clause)
 
 # Dans chaque colonne, chaque chiffre doit apparaître 1 fois et une seule
-def eachColumn(data:dict):
-    pass
+def eachColumn(y:int,val:int,data:dict,list:list):
+    listVar = []
+    listVarNot = []
+    for x in range(1,10):
+        listVar.append(data[str.format("x {} {} {}",x,y,val)]['value'])
+        listVarNot.append(data[str.format("!x {} {} {}",x,y,val)]['value'])
+    clause = Clause(listVar)
+    list.append(clause)
+    for var in listVar:
+        data[var.name]['clause'].append(clause)
+    for listClause in it.combinations(listVarNot,2):
+        list.append(Clause(listClause))
+        for var in listClause:
+            data[var.name]['clause'].append(clause)
 
 # Dans chaque carré, chaque chiffre doit apparaître 1 fois et une seule
-def eachSquare(data:dict):
-    pass
+def eachSquare(xSquare:int,ySquare:int,val:int,data:dict,list:list):
+    listVar = []
+    listVarNot = []
+    for x in range(xSquare,xSquare+3):
+        for y in range(ySquare,ySquare+3):
+            listVar.append(data[str.format("x {} {} {}",x,y,val)]['value'])
+            listVarNot.append(data[str.format("!x {} {} {}",x,y,val)]['value'])
+    clause = Clause(listVar)
+    list.append(clause)
+    for var in listVar:
+        data[var.name]['clause'].append(clause)
+    for listClause in it.combinations(listVarNot,2):
+        list.append(Clause(listClause))
+        for var in listClause:
+            data[var.name]['clause'].append(clause)
 
 data = CreateDict()
-GenClause(data)
+listClause = []
+GenClause(data,listClause)
+print("Le nombre de variable propositionnelles est de {} et le nombre de clause est de {}".format(int(data.__len__()/2),listClause.__len__()))
