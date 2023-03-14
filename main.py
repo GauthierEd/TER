@@ -9,16 +9,13 @@ class Clause:
     def __init__(self, list_litteraux):
         # La liste contient les identifiants des variables du dictionnaire
         self.list_litteraux:list = list_litteraux
-        # Une clause est satisfaite si nb_litteraux_satis > 0
-        self.nb_litteraux_satis = 0
-        # Une clause est insatisfaite si nb_litteraux_nsatis == nb_littéraux de la clause
-        self.nb_literraux_nsatis = 0
 
-    #def __repr__(self) -> str:
-        #return("^".join(self.list_litteraux))
-    
-    def isSatisfy(self):
-        pass
+    def __repr__(self):
+        txt = ""
+        for l in self.list_litteraux:
+            txt += " " + l.name
+        return txt
+
 
 # Objet qui represente une variable, contient sa valeur et s'il est une négation ou pas
 class Variable:
@@ -31,7 +28,7 @@ class Variable:
         self.isNot = isNot
     
     def __repr__(self) -> str:
-        return(f'Nom: {self.name}, Valeur: {self.getValue()}, isNot: {self.isNot}')
+        return(f'Nom: {self.name}, Valeur: {self.value}, isNot: {self.isNot}')
 
     def setValue(self, value):
         self.value = value
@@ -118,18 +115,20 @@ def createClause(data:dict,listVar:list,listVarNot:list,list:list):
 
 def dpll(data, litteral = None):
     clause_empty = []
-    clause_uni = set()
+    clause_uni = []
     if litteral != None:
-        clause_uni.add(Clause([data[litteral]["value"]]))
+        clause_uni.append(Clause([data[litteral]["value"]]))
     # Propagation unitaire
     # Recherche de toutes les clauses unitaires
     for key, value in data.items():
         for clause in value["clause"]:
             if len(clause.list_litteraux) == 1:
-                clause_uni.add(clause)
+                clause_uni.append(clause)
     for clause in clause_uni:
         if len(clause.list_litteraux) > 0:
             litt = clause.list_litteraux[0].name
+        else:
+            break
         if "!" in litt:
             # Met !x à faux
             data[litt]["value"].setValue(False)
@@ -225,6 +224,7 @@ data = createDict()
 listClause = []
 genClause(data,listClause)
 print("Le nombre de variable propositionnelles est de {} et le nombre de clause est de {}".format(int(data.__len__()/2),listClause.__len__()))
+
 litt = ["x 1 1 8", "x 8 1 7", "x 3 2 6", "x 5 2 1", "x 8 2 5", "x 9 2 3", "x 2 3 4", "x 4 3 6", "x 5 4 8", "x 7 4 4", "x 3 5 3", "x 7 5 7", 
                           "x 2 6 2", "x 6 6 5", "x 8 6 3","x 9 6 8", "x 7 7 8", "x 3 8 4", "x 5 8 5", "x 8 8 6", "x 9 8 1", "x 1 9 9", "x 6 9 2"]
 for l in litt:
