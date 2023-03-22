@@ -5,6 +5,7 @@ class Solver:
     def __init__(self, heuristic = 1):
         self.heuristic = heuristic
         self.all_solution = []
+        self.get_all_solution = False
 
     def dpll(self, data:dict, litteral = None):
         clause_empty = []
@@ -31,8 +32,11 @@ class Solver:
         for key, value in data.items():
             if len(value["clause"]) > 0:
                 isEmpty = False
-        if isEmpty:
+        if isEmpty and not self.get_all_solution:
             return data
+        elif isEmpty and self.get_all_solution:
+            self.all_solution.append(data)
+            return True
         
         # Test s'il existe des clauses vides
         if len(clause_empty) > 0:
@@ -45,11 +49,13 @@ class Solver:
                 break
         
         result = self.dpll(deepcopy(data), new_litteral)
-        if result:
+        if result and not self.get_all_solution:
             return result
         result = self.dpll(deepcopy(data), "!"+new_litteral)
-        if result:
+        if result and not self.get_all_solution:
             return result
+        elif result and self.get_all_solution:
+            return True
         else:
             return False
 
