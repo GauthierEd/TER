@@ -1,4 +1,5 @@
 from .generator import Generator
+from .Dames import Dames
 from .solver import Solver
 import numpy as np
 import time
@@ -30,6 +31,13 @@ class App:
         print("Le nombre de variable propositionnelles est de {} et le nombre de clause est de {}".format(int(self.data.__len__()/2),self.listClause.__len__()))
         if len(self.addClause) > 0:
             self.addClauseForNumber()
+
+    def Dames(self):
+        dames = Dames()
+        d = dames.createDict()
+        l = []
+        dames.genClause(d,l)
+        return self.solver.dpll(d)
 
     def resolve(self):
         start_time = time.time()
