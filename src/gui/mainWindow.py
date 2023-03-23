@@ -134,6 +134,7 @@ class MainWindow(QMainWindow):
                 for k in range(1,10):
                     if result[str.format("x {} {} {}",i,j,k)]["value"].value:
                         self.grid[j-1][i-1].setText(str(k))
+                        self.gridInput[j-1][i-1].setText(str(k))
                         break
 
     def handle_new_click(self):
