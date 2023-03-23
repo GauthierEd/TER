@@ -11,15 +11,15 @@ class App:
         self.solver = Solver()
         self.data = None
         self.listClause = []
-        self.button_solve_is_clicked = False
-        self.button_edit_is_clicked = False
+        self.addClause = []
         # Gestion GUI
         self.app = QApplication([])
         self.window = MainWindow()
 
     def initGui(self):
         self.window.solveButton.clicked.connect(self.handle_solve_click)
-        self.window.editButton.clicked.connect(self.handle_edit_click)
+        self.window.saveButton.clicked.connect(self.handle_save_click)
+        self.window.newButton.clicked.connect(self.handle_new_click)
         self.window.show()
         self.app.exec()
 
@@ -28,7 +28,8 @@ class App:
         self.data = self.generator.createDict()
         self.generator.genClause(self.data, self.listClause)
         print("Le nombre de variable propositionnelles est de {} et le nombre de clause est de {}".format(int(self.data.__len__()/2),self.listClause.__len__()))
-        #self.addClauseForNumber()
+        if len(self.addClause) > 0:
+            self.addClauseForNumber()
 
     def resolve(self):
         start_time = time.time()
@@ -54,17 +55,23 @@ class App:
     def addClauseForNumber(self):
         list_litt = [    "x 1 1 8", "x 8 1 7", "x 3 2 6", "x 5 2 1", "x 8 2 5", "x 9 2 3", "x 2 3 4", "x 4 3 6", "x 5 4 8", "x 7 4 4", "x 3 5 3", "x 7 5 7", 
                     "x 2 6 2", "x 6 6 5", "x 8 6 3","x 9 6 8", "x 7 7 8", "x 3 8 4", "x 5 8 5", "x 8 8 6", "x 9 8 1", "x 1 9 9", "x 6 9 2"]
-        self.generator.createNumberClause(list_litt, self.data, self.listClause)
+        self.generator.createNumberClause(self.addClause, self.data, self.listClause)
     
     def handle_solve_click(self):
-        if not self.button_solve_is_clicked:
-            print("Press solve")
+        if not self.window.button_solve_is_clicked:
             self.button_solve_is_clicked = True
+            all_sol = self.window.checkBox.checkState()
+            "CheckState.Unchecked ou CheckState.Checked"
+            heuristic = self.window.comboBox.currentText()
+            print(all_sol, heuristic)
             self.createClause()
             self.resolve()
+            self.window.button_solve_is_clicked = False  
+
+    def handle_save_click(self):
+        self.window.handle_save_click(self.addClause)
     
-    def handle_edit_click(self):
-        if not self.button_edit_is_clicked:
-            print("Press edit")
-            self.button_edit_is_clicked = True
-        
+    def handle_new_click(self):
+        if not self.window.button_solve_is_clicked:
+            self.addClause = []
+            self.window.handle_new_click()

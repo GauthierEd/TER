@@ -1,18 +1,22 @@
 from PyQt6.QtCore import QSize, Qt, QRect
-from PyQt6.QtWidgets import QMainWindow, QLabel, QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QPushButton, QFrame, QSpacerItem, QSizePolicy
-from PyQt6.QtGui import QPalette, QColor, QFont
-from copy import deepcopy
+from PyQt6.QtWidgets import QComboBox, QCheckBox, QLineEdit, QMainWindow, QStackedLayout, QLabel, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSpacerItem
+from PyQt6.QtGui import QFont, QIntValidator, QValidator
+from .grid import Grid
+from .gridEdit import GridEdit
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        
+        self.button_solve_is_clicked = False
         self.setFixedSize(QSize(600, 600))
         self.centralwidget = QWidget(parent=self)
         self.verticalLayoutWidget_4 = QWidget(parent=self.centralwidget)
         self.verticalLayoutWidget_4.setGeometry(QRect(0, 0, 600, 600))
 
-        self.verticalLayout_4 = QVBoxLayout(self.verticalLayoutWidget_4)
+        self.stackedLayout = QStackedLayout(self.verticalLayoutWidget_4)
+
+        self.first = QWidget()
+        self.verticalLayout_4 = QVBoxLayout(self.first)
         self.verticalLayout_4.setContentsMargins(20, 20, 20, 20)
         self.verticalLayout_4.setSpacing(0)
 
@@ -23,190 +27,106 @@ class MainWindow(QMainWindow):
         font = QFont()
         font.setPointSize(20)
         
+        self.newButton = QPushButton("New")
+        self.newButton.setFont(font)
+        self.horizontalLayout_3.addWidget(self.newButton)
+
         self.editButton = QPushButton("Edit")
         self.editButton.setFont(font)
+        self.editButton.clicked.connect(self.handle_edit_click)
         self.horizontalLayout_3.addWidget(self.editButton)
 
         self.solveButton = QPushButton("Solve")
         self.solveButton.setFont(font)
-        #self.solveButton.clicked.connect(self.handle_solve_click)
         self.horizontalLayout_3.addWidget(self.solveButton)
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_3)
 
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setContentsMargins(50, 0, 50, 0)
+        self.horizontalLayout_5.setSpacing(20)
+
+        self.checkBox = QCheckBox("Toutes les solutions")
+        self.horizontalLayout_5.addWidget(self.checkBox)
+
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_5.setContentsMargins(70, 10, 70, 0)
+        self.horizontalLayout_6.setSpacing(5)
+        self.labelSpinBox = QLabel("Heuristique :")
+        self.horizontalLayout_6.addWidget(self.labelSpinBox)
+        self.comboBox = QComboBox()
+        self.comboBox.addItem("1")
+        self.comboBox.addItem("2")
+        self.comboBox.addItem("3")
+        self.horizontalLayout_6.addWidget(self.comboBox)
+
+        self.horizontalLayout_5.addLayout(self.horizontalLayout_6)
+
+        self.verticalLayout_4.addLayout(self.horizontalLayout_5)
         # SPACE SEPARATOR
         spacerItem = QSpacerItem(5, 20)
         self.verticalLayout_4.addItem(spacerItem)
 
         # GRID BOTTOM
-        self.grid = [[0 for x in range(10)] for y in range(10)] 
-        for i in range(10):
-            for j in range(10):
+        self.grid = [[0 for x in range(9)] for y in range(9)]
+        for i in range(9):
+            for j in range(9):
                 label = QLabel("")
+                label.setGeometry(QRect(0, 0, 55, 50))
                 label.setFont(font)
                 label.setStyleSheet("background-color:\"#cccdcf\"")
                 label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.grid[i][j] = label
-        self.horizontalLayout = QHBoxLayout()
-        self.verticalLayout = QVBoxLayout()
-        #   X - -
-        #   - - -
-        #   - - -
-        self.gridLayout_4 = QGridLayout()
-        self.gridLayout_4.setContentsMargins(0, 0, 4, 4)
-        self.gridLayout_4.setSpacing(4)
-        for i in range(3):
-            for j in range(3):
-                self.gridLayout_4.addWidget(self.grid[i][j], i, j)
-        self.verticalLayout.addLayout(self.gridLayout_4)
-
-        self.line_2 = QFrame(parent=self.verticalLayoutWidget_4)
-        self.line_2.setFrameShadow(QFrame.Shadow.Plain)
-        self.line_2.setLineWidth(3)
-        self.line_2.setFrameShape(QFrame.Shape.HLine)
-        self.verticalLayout.addWidget(self.line_2)
-
-        #   - - -
-        #   X - -
-        #   - - -
-        self.gridLayout = QGridLayout()
-        self.gridLayout.setContentsMargins(0, 4, 4, 4)
-        self.gridLayout.setSpacing(4)
-        for i in range(3):
-            for j in range(3):
-                self.gridLayout.addWidget(self.grid[i+3][j], i, j)
-        self.verticalLayout.addLayout(self.gridLayout)
-
-        self.line = QFrame(parent=self.verticalLayoutWidget_4)
-        self.line.setFrameShadow(QFrame.Shadow.Plain)
-        self.line.setLineWidth(3)
-        self.line.setFrameShape(QFrame.Shape.HLine)
-        self.verticalLayout.addWidget(self.line)
-
-        #   - - -
-        #   - - -
-        #   X - -
-        self.gridLayout_3 = QGridLayout()
-        self.gridLayout_3.setContentsMargins(0, 4, 4, 0)
-        self.gridLayout_3.setSpacing(4)
-        for i in range(3):
-            for j in range(3):
-                self.gridLayout_3.addWidget(self.grid[i+6][j], i, j)
-        self.verticalLayout.addLayout(self.gridLayout_3)
-
-        self.horizontalLayout.addLayout(self.verticalLayout)
-
-        self.line_7 = QFrame(parent=self.verticalLayoutWidget_4)
-        self.line_7.setFrameShadow(QFrame.Shadow.Plain)
-        self.line_7.setLineWidth(3)
-        self.line_7.setFrameShape(QFrame.Shape.VLine)
-        self.horizontalLayout.addWidget(self.line_7)
-
-        self.verticalLayout_2 = QVBoxLayout()
+                self.grid[i][j] = label 
         
-        #   - X -
-        #   - - -
-        #   - - -
-        self.gridLayout_5 = QGridLayout()
-        self.gridLayout_5.setContentsMargins(4, 0, 4, 4)
-        self.gridLayout_5.setSpacing(4)
-        for i in range(3):
-            for j in range(3):
-                self.gridLayout_5.addWidget(self.grid[i][j+3], i, j)
-        self.verticalLayout_2.addLayout(self.gridLayout_5)
+        self.gridSudoku = Grid(self.grid, self.first)
+    
+        self.verticalLayout_4.addLayout(self.gridSudoku)
+        self.stackedLayout.addWidget(self.first)
 
-        self.line_3 = QFrame(parent=self.verticalLayoutWidget_4)
-        self.line_3.setFrameShadow(QFrame.Shadow.Plain)
-        self.line_3.setLineWidth(3)
-        self.line_3.setFrameShape(QFrame.Shape.HLine)
-        self.verticalLayout_2.addWidget(self.line_3)
+        self.second = QWidget()
+        self.verticalLayout_5 = QVBoxLayout(self.second)
+        self.verticalLayout_5.setContentsMargins(20, 20, 20, 20)
+        self.verticalLayout_5.setSpacing(0)
+        # BUTTON TOP
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setContentsMargins(50, 0, 50, 0)
+        self.horizontalLayout_4.setSpacing(20)
+        
+        self.saveButton = QPushButton("Save")
+        self.saveButton.setFont(font)
+        self.horizontalLayout_4.addWidget(self.saveButton)
 
-        #   - - -
-        #   - X -
-        #   - - -
-        self.gridLayout_6 = QGridLayout()
-        self.gridLayout_6.setContentsMargins(4, 4, 4, 4)
-        self.gridLayout_6.setSpacing(4)
-        for i in range(3):
-            for j in range(3):
-                self.gridLayout_6.addWidget(self.grid[i+3][j+3], i, j)
-        self.verticalLayout_2.addLayout(self.gridLayout_6)
+        self.returnButton = QPushButton("Return")
+        self.returnButton.setFont(font)
+        self.returnButton.clicked.connect(self.handle_return_click)
+        self.horizontalLayout_4.addWidget(self.returnButton)
 
-        self.line_4 = QFrame(parent=self.verticalLayoutWidget_4)
-        self.line_4.setFrameShadow(QFrame.Shadow.Plain)
-        self.line_4.setLineWidth(3)
-        self.line_4.setFrameShape(QFrame.Shape.HLine)
-        self.verticalLayout_2.addWidget(self.line_4)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_4)
 
-        #   - - -
-        #   - - -
-        #   - X -
-        self.gridLayout_7 = QGridLayout()
-        self.gridLayout_7.setContentsMargins(4, 4, 4, 0)
-        self.gridLayout_7.setSpacing(4)
-        for i in range(3):
-            for j in range(3):
-                self.gridLayout_7.addWidget(self.grid[i+6][j+3], i, j)
-        self.verticalLayout_2.addLayout(self.gridLayout_7)
+        # SPACE SEPARATOR
+        spacerItem = QSpacerItem(5, 20)
+        self.verticalLayout_5.addItem(spacerItem)
 
-        self.horizontalLayout.addLayout(self.verticalLayout_2)
+        self.gridInput = [[0 for x in range(9)] for y in range(9)]
+        onlyInt = Validator()
+        for i in range(9):
+            for j in range(9):
+                input = QLineEdit()
+                input.setValidator(onlyInt)
+                input.setFixedWidth(55)
+                input.setFixedHeight(50)
+                input.setFont(font)
+                input.setStyleSheet("background-color:\"#cccdcf\"")
+                input.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.gridInput[i][j] = input
+                
+        
+        self.gridEdit = GridEdit(self.gridInput, self.second)
+        self.verticalLayout_5.addLayout(self.gridEdit)
 
-        self.line_8 = QFrame(parent=self.verticalLayoutWidget_4)
-        self.line_8.setFrameShadow(QFrame.Shadow.Plain)
-        self.line_8.setLineWidth(3)
-        self.line_8.setFrameShape(QFrame.Shape.VLine)
-        self.horizontalLayout.addWidget(self.line_8)
-
-        self.verticalLayout_3 = QVBoxLayout()
-        #   - - X
-        #   - - -
-        self.gridLayout_8 = QGridLayout()
-        self.gridLayout_8.setContentsMargins(4, 0, 0, 4)
-        self.gridLayout_8.setSpacing(4)
-        for i in range(3):
-            for j in range(3):
-                self.gridLayout_8.addWidget(self.grid[i][j+6], i, j)
-        self.verticalLayout_3.addLayout(self.gridLayout_8)
-
-        self.line_5 = QFrame(parent=self.verticalLayoutWidget_4)
-        self.line_5.setFrameShadow(QFrame.Shadow.Plain)
-        self.line_5.setLineWidth(3)
-        self.line_5.setFrameShape(QFrame.Shape.HLine)
-        self.verticalLayout_3.addWidget(self.line_5)
-
-        #   - - -
-        #   - - X
-        #   - - -
-        self.gridLayout_9 = QGridLayout()
-        self.gridLayout_9.setContentsMargins(4, 4, 0, 4)
-        self.gridLayout_9.setSpacing(4)
-        for i in range(3):
-            for j in range(3):
-                self.gridLayout_9.addWidget(self.grid[i+3][j+6], i, j)
-        self.verticalLayout_3.addLayout(self.gridLayout_9)
-
-        self.line_6 = QFrame(parent=self.verticalLayoutWidget_4)
-        self.line_6.setFrameShadow(QFrame.Shadow.Plain)
-        self.line_6.setLineWidth(3)
-        self.line_6.setFrameShape(QFrame.Shape.HLine)
-        self.verticalLayout_3.addWidget(self.line_6)
-
-        #   - - -
-        #   - - -
-        #   - - X
-        self.gridLayout_10 = QGridLayout()
-        self.gridLayout_10.setContentsMargins(4, 4, 0, 0)
-        self.gridLayout_10.setSpacing(4)
-        for i in range(3):
-            for j in range(3):
-                self.gridLayout_10.addWidget(self.grid[i+6][j+6], i, j)
-        self.verticalLayout_3.addLayout(self.gridLayout_10)
-
-        self.horizontalLayout.addLayout(self.verticalLayout_3)
-
-        self.verticalLayout_4.addLayout(self.horizontalLayout)
-
+        self.stackedLayout.addWidget(self.second)
         self.setCentralWidget(self.centralwidget)
+
 
     def display_result(self, result):
         for i in range(1,10):
@@ -215,3 +135,36 @@ class MainWindow(QMainWindow):
                     if result[str.format("x {} {} {}",i,j,k)]["value"].value:
                         self.grid[j-1][i-1].setText(str(k))
                         break
+
+    def handle_new_click(self):
+        for i in range(9):
+            for j in range(9):
+                self.grid[i][j].setText("")
+                self.gridInput[i][j].clear()
+        
+
+    def handle_edit_click(self):
+        if not self.button_solve_is_clicked:
+            self.stackedLayout.setCurrentIndex(1)
+
+    def handle_save_click(self, list_clause):
+        for i in range(9):
+            for j in range(9):
+                if self.gridInput[i][j].text():
+                    clause = str.format("x {} {} {}",j+1,i+1,self.gridInput[i][j].text())
+                    list_clause.append(clause)
+                self.grid[i][j].setText(self.gridInput[i][j].text())
+        self.stackedLayout.setCurrentIndex(0)
+
+    def handle_return_click(self):
+        self.stackedLayout.setCurrentIndex(0)
+
+class Validator(QIntValidator):
+    def __init__(self):
+        super().__init__()
+        self.setRange(1,9)
+
+    def validate(self, ch, pos):
+        if pos==1 and ch=="0":
+            return (QValidator.State.Invalid, ch, pos)
+        return QIntValidator.validate(self, ch, pos)
