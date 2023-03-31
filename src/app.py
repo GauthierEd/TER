@@ -33,6 +33,7 @@ class App:
             self.addClauseForNumber()
 
     def Dames(self):
+        self.solver.get_all_solution = True
         dames = Dames()
         d = dames.createDict()
         l = []

@@ -23,7 +23,8 @@ class Variable:
         self.isNot = isNot
     
     def __repr__(self) -> str:
-        return(f'Nom: {self.name}, Valeur: {self.value}, isNot: {self.isNot}')
+        #return(f'Nom: {self.name}, Valeur: {self.value}, isNot: {self.isNot}')
+        return(self.name)
 
 
     def setValue(self, value):

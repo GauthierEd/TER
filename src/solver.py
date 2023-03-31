@@ -1,11 +1,12 @@
 from copy import deepcopy
 from .utils import Clause
+import numpy as np
 
 class Solver:
     def __init__(self, heuristic = 1):
         self.heuristic = heuristic
         self.all_solution = []
-        self.get_all_solution = False
+        self.get_all_solution = True
 
     def dpll(self, data:dict, litteral = None):
         clause_empty = []
@@ -27,27 +28,32 @@ class Solver:
         #### LITTERAUX PURE ####
         self.pure_literal(data)
 
+        # Test s'il existe des clauses vides
+        if len(clause_empty) > 0:
+            return False
+        
         # Test si il y a plus de clause
         isEmpty = True
         for key, value in data.items():
             if len(value["clause"]) > 0:
                 isEmpty = False
+                break
+
         if isEmpty and not self.get_all_solution:
             return data
         elif isEmpty and self.get_all_solution:
             self.all_solution.append(data)
             return True
-        
-        # Test s'il existe des clauses vides
-        if len(clause_empty) > 0:
-            return False
-                
+          
         # On choisit un litteral, on prends le 1er litteral qui n'a pas encore de valeur associé
         for key, value in data.items():
             if value["value"].getValue() == None and len(value["clause"]) > 0:
                 new_litteral = key
                 break
-        
+
+        if "!" in new_litteral:
+            new_litteral = new_litteral.split("!")[1]
+
         result = self.dpll(deepcopy(data), new_litteral)
         if result and not self.get_all_solution:
             return result
@@ -67,7 +73,7 @@ class Solver:
             # Met x à vrai
             data[litt]["value"].setValue(True)
         # Supprime toutes les clauses où x ou !x apparait car elles sont satisfaites
-        for clause in data[litt]["clause"]:
+        for clause in list(data[litt]["clause"]):
             clause_litt = clause.list_litteraux
             for l in clause_litt:
                 data[l.name]["clause"].remove(clause)
@@ -81,9 +87,8 @@ class Solver:
             inv_litt = "!" + litt
             data[inv_litt]["value"].setValue(True)
         # Supprime x ou !x dans toutes les clauses où il apparait
-        for clause in data[inv_litt]["clause"]:
+        for clause in list(data[inv_litt]["clause"]):
             # On supprimer aussi x des autres clauses car ils sont passé en copy dans le dict
-            clause.list_litteraux = list(clause.list_litteraux)
             clause.list_litteraux.remove(data[inv_litt]["value"])
             # Si la clause est vide, on la garde en mémoire
             if len(clause.list_litteraux) == 0:
