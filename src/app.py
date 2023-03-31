@@ -4,12 +4,14 @@ import numpy as np
 import time
 from PyQt6.QtWidgets import QApplication
 from .gui.mainWindow import MainWindow
+from .gui.worker import Worker
 
 class App:
     def __init__(self):
         self.generator = Generator()
         self.solver = Solver()
         self.data = None
+        self.result_dpll = None
         self.listClause = []
         self.addClause = []
         # Gestion GUI
@@ -25,48 +27,60 @@ class App:
 
     def createClause(self):
         # Creation des clauses
+        self.listClause = []
         self.data = self.generator.createDict()
         self.generator.genClause(self.data, self.listClause)
         print("Le nombre de variable propositionnelles est de {} et le nombre de clause est de {}".format(int(self.data.__len__()/2),self.listClause.__len__()))
         if len(self.addClause) > 0:
             self.addClauseForNumber()
 
-    def resolve(self):
-        start_time = time.time()
-        start_time_cpu = time.process_time()
-        # Résolution du sudoku
-        result_dpll = self.solver.dpll(self.data)
-        end_time = time.time()
-        end_time_cpu = time.process_time()
-        print("Temps d'execution: %s secondes" % np.round((end_time - start_time),2))
-        print("Temps d'execution cpu: %s secondes" % np.round((end_time_cpu - start_time_cpu),2))
-        if not self.solver.get_all_solution and result_dpll:
+    def display_result(self, result):
+        print("Temps d'execution: %s secondes" % result["time"])
+        print("Temps d'execution cpu: %s secondes" % result["cpu_time"])
+        if not self.solver.get_all_solution and result["dpll"]:
             print("Un modele")
         elif self.solver.get_all_solution and len(self.solver.all_solution) > 0:
             print(len(self.solver.all_solution), " modeles")
         else:
             print("Pas de modele")
-        # Affichage de la grille finale de sudoku
+        print("Recursivité",self.solver.recursivity)
+        print("Branche close",self.solver.branch_close)
         if not self.solver.get_all_solution:
-            self.window.display_result(result_dpll)
+            self.window.display_result(result["dpll"])
         else:
             self.window.display_result(self.solver.all_solution[0])
+            for a in self.solver.all_solution:
+                m = np.zeros((9,9))
+                for i in range(1,10):
+                    for j in range(1,10):
+                        for k in range(1,10):
+                            if a[str.format("x {} {} {}",i,j,k)]["value"].value:
+                                m[j-1][i-1] = k
+                print(m)
 
+    def thread_complete(self):
+        self.window.button_solve_is_clicked = False
+
+    def resolve(self):
+        # Résolution du sudoku
+        worker = Worker(self.solver.dpll, self.data)
+        worker.signals.result.connect(self.display_result)
+        worker.signals.finished.connect(self.thread_complete)
+        self.window.threadpool.start(worker)
+        
     def addClauseForNumber(self):
-        list_litt = [    "x 1 1 8", "x 8 1 7", "x 3 2 6", "x 5 2 1", "x 8 2 5", "x 9 2 3", "x 2 3 4", "x 4 3 6", "x 5 4 8", "x 7 4 4", "x 3 5 3", "x 7 5 7", 
-                    "x 2 6 2", "x 6 6 5", "x 8 6 3","x 9 6 8", "x 7 7 8", "x 3 8 4", "x 5 8 5", "x 8 8 6", "x 9 8 1", "x 1 9 9", "x 6 9 2"]
         self.generator.createNumberClause(self.addClause, self.data, self.listClause)
     
     def handle_solve_click(self):
         if not self.window.button_solve_is_clicked:
-            self.button_solve_is_clicked = True
-            all_sol = self.window.checkBox.checkState()
-            "CheckState.Unchecked ou CheckState.Checked"
+            self.window.button_solve_is_clicked = True
+            all_sol = self.window.checkBox.isChecked()
             heuristic = self.window.comboBox.currentText()
-            print(all_sol, heuristic)
+            self.solver.set_all_solution(all_sol)
+            self.solver.set_heuristic(int(heuristic))
+            self.solver.all_solution = []
             self.createClause()
             self.resolve()
-            self.window.button_solve_is_clicked = False  
 
     def handle_save_click(self):
         self.window.handle_save_click(self.addClause)

@@ -15,14 +15,14 @@ class Generator:
                     data["!"+name] = {"value": Variable("!"+name,True), "clause": []}
         return data
 
-    def createClause(self, data:dict, listVar:list, listVarNot:list, list:list):
+    def createClause(self, data:dict, listVar:list, listVarNot:list, listC:list):
         clause = Clause(listVar)
-        list.append(clause)
+        listC.append(clause)
         for var in listVar:
             data[var.name]['clause'].append(clause)
         for listClause in it.combinations(listVarNot,2):
-            clause = Clause(listClause)
-            list.append(clause)
+            clause = Clause(list(listClause))
+            listC.append(clause)
             for var in listClause:
                 data[var.name]['clause'].append(clause)
     

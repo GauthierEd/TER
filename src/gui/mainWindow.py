@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QSize, Qt, QRect
+from PyQt6.QtCore import QSize, Qt, QRect, QThreadPool
 from PyQt6.QtWidgets import QComboBox, QCheckBox, QLineEdit, QMainWindow, QStackedLayout, QLabel, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSpacerItem
 from PyQt6.QtGui import QFont, QIntValidator, QValidator
 from .grid import Grid
@@ -7,6 +7,8 @@ from .gridEdit import GridEdit
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.threadpool = QThreadPool()
+        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
         self.button_solve_is_clicked = False
         self.setFixedSize(QSize(600, 600))
         self.centralwidget = QWidget(parent=self)
@@ -151,8 +153,10 @@ class MainWindow(QMainWindow):
     def handle_save_click(self, list_clause):
         for i in range(9):
             for j in range(9):
+                print(self.gridInput[i][j].text())
                 if self.gridInput[i][j].text():
                     clause = str.format("x {} {} {}",j+1,i+1,self.gridInput[i][j].text())
+                    print(clause)
                     list_clause.append(clause)
                 self.grid[i][j].setText(self.gridInput[i][j].text())
         self.stackedLayout.setCurrentIndex(0)
