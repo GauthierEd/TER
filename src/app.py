@@ -32,13 +32,27 @@ class App:
         if len(self.addClause) > 0:
             self.addClauseForNumber()
 
-    def Dames(self):
-        self.solver.get_all_solution = True
-        dames = Dames()
+    def Dames(self, nbDames:int, all_soluce:bool = False):
+        self.solver.get_all_solution = all_soluce
+        dames = Dames(nbDames)
         d = dames.createDict()
         l = []
         dames.genClause(d,l)
-        return self.solver.dpll(d)
+        res = self.solver.dpll(d)
+        if self.solver.get_all_solution:
+            for data in self.solver.all_solution:
+                print(str(self.reprDames(nbDames, data)) + "\n")
+            print(len(self.solver.all_solution))
+        else:
+            print(self.reprDames(nbDames, res))
+
+    def reprDames(self, size:int, data:dict):
+        m = np.zeros((size,size))
+        for i in range(1,size+1):
+            for j in range(1,size+1):
+                if data[str.format("x {} {}",i,j)]["value"].value:
+                    m[i-1][j-1] = 1
+        return m
 
     def resolve(self):
         start_time = time.time()
