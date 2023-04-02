@@ -23,7 +23,8 @@ class Dames:
             self.eachDiag1(i,data,listClause)
         for i in range(self.size,1,-1):
             self.eachDiag2(i,data,listClause)
-
+        for key, value in data.items():
+            value["value"].nb_clause_in = len(value["clause"])
 
     def eachRow(self, x:int, data:dict, listClause:list):
         listVar = []

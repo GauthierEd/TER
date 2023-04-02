@@ -41,8 +41,6 @@ class Variable:
         self.name = name
         # Valeur de la variable, None si pas initialisé, 1 pour vrai, -1 pour faux
         self.value = None
-        # Booleen pour savoir si variable est x111 ou !x111 pour calculer sa valeur
-        self.isNot = isNot
         self.nb_clause_in = 0
 
     def __repr__(self) -> str:
@@ -51,9 +49,3 @@ class Variable:
 
     def setValue(self, value):
         self.value = value
-    
-    def getValue(self):
-        if not self.isNot or self.value == None:
-            return self.value
-        else :
-            return not self.value

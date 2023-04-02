@@ -18,6 +18,7 @@ class Solver:
         self.backtracking = []
         self.indexBacktracking = -1
         self.moms_data = None
+        self.size_max = 0
 
     def set_all_solution(self, choice):
         self.get_all_solution = choice
@@ -58,7 +59,7 @@ class Solver:
         beta = 2
         return alpha * max(self.h(data,i,litteral), self.h(data,i,'!'+litteral)) + beta * min(self.h(data,i,litteral), self.h(data,i,'!'+litteral))
 
-    def dpll(self, data:dict, litteral = None, clause_unit = []):
+    def dpll(self, data, litteral = None, clause_unit = []):
         self.recursivity += 1
         clause_empty = [False]
         next_clause_unit = []
@@ -101,8 +102,7 @@ class Solver:
         if isEmpty and not self.get_all_solution:
             return data
         elif isEmpty and self.get_all_solution:
-            #self.all_solution.append(deepcopy(data))
-            self.all_solution.append([])
+            self.all_solution.append(deepcopy(data))
             return True
 
         new_litteral = None
@@ -125,7 +125,7 @@ class Solver:
             for i in range(0,len(keys), 2):
                 key = keys[i]
                 if data[key]["value"].value == None:
-                    vector = (self.H(data, 2, key), self.H(data, 9, key))
+                    vector = (self.H(data, 2, key), self.H(data, self.size_max, key))
                     if vector > maxVector:
                         maxVector = vector
                         new_litteral = key
@@ -138,7 +138,7 @@ class Solver:
                     smallest_clause = clause
                     break
             if smallest_clause == None:
-                for clause in self.moms_data["9"]:
+                for clause in self.moms_data[str(self.size_max)]:
                     if clause.nb_litt_satisfied == 0:
                         smallest_clause = clause
                         break
@@ -187,8 +187,7 @@ class Solver:
                     if max(occurPos, occurNeg) > maxDLIS:
                         maxDLIS = max(occurPos, occurNeg)
                         new_litteral = key
-            
-        #print(new_litteral)
+        
         if "!" in new_litteral:
             new_litteral = new_litteral.split("!")[1]  
         
