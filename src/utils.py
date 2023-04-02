@@ -3,13 +3,35 @@
 class Clause:
     def __init__(self, list_litteraux):
         # La liste contient les identifiants des variables du dictionnaire
-        self.list_litteraux:list = list_litteraux
+        self.list_litteraux = list_litteraux
+        self.nb_litt_satisfied = 0
+        self.nb_litt_unsatisfied = len(list_litteraux)
+
+    def isSatisfy(self):
+        if self.nb_litt_satisfied >= 1:
+            return True
+        elif self.nb_litt_unsatisfied == len(self.list_litteraux):
+            return False
+        else:
+            return False
+
+    def isUnit(self):
+        if self.nb_litt_satisfied == 0 and self.nb_litt_unsatisfied ==  1:
+            return True
+        else:
+            return False
+        
+    def isNotValid(self):
+        if self.nb_litt_satisfied == 0 and self.nb_litt_unsatisfied == 0:
+            return True
+        else:
+            return False
 
     def __repr__(self):
         txt = ""
         for l in self.list_litteraux:
             txt += " " + l.name
-        return txt
+        return(f'{txt}, {self.nb_litt_satisfied}, {self.nb_litt_unsatisfied}')
 
 
 # Objet qui represente une variable, contient sa valeur et s'il est une négation ou pas
@@ -21,10 +43,11 @@ class Variable:
         self.value = None
         # Booleen pour savoir si variable est x111 ou !x111 pour calculer sa valeur
         self.isNot = isNot
-    
-    def __repr__(self) -> str:
-        return(f'Nom: {self.name}, Valeur: {self.value}, isNot: {self.isNot}')
+        self.nb_clause_in = 0
 
+    def __repr__(self) -> str:
+        #return(f'Nom: {self.name}, Valeur: {self.value}, isNot: {self.isNot}')
+        return(f'{self.name}, {self.nb_clause_in}, {self.value}')
 
     def setValue(self, value):
         self.value = value

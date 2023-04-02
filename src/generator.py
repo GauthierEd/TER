@@ -40,6 +40,8 @@ class Generator:
             for ySquare in range(1,10,3):
                 for val in range(1,10):
                     self.eachSquare(xSquare,ySquare,val,data,listClause)
+        for key, value in data.items():
+            value["value"].nb_clause_in = len(value["clause"])
     
     # Dans chaque case, il y a un chiffre et un seul
     def eachCell(self, x:int, y:int, data:dict, list:list):
@@ -78,8 +80,7 @@ class Generator:
                 listVarNot.append(data[str.format("!x {} {} {}",x,y,val)]['value'])
         self.createClause(data,listVar,listVarNot,list)
     
-    def createNumberClause(self, list_litt:list, data:dict, listClause:list):
+    def createNumberClause(self, list_litt:list, data:dict, unit_clause:list):
         for l in list_litt:
             clause = Clause([data[l]["value"]])
-            data[l]["clause"].append(clause)
-            listClause.append(clause)
+            unit_clause.append(clause)

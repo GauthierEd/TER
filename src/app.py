@@ -1,7 +1,6 @@
 from .generator import Generator
 from .solver import Solver
 import numpy as np
-import time
 from PyQt6.QtWidgets import QApplication
 from .gui.mainWindow import MainWindow
 from .gui.worker import Worker
@@ -14,6 +13,7 @@ class App:
         self.result_dpll = None
         self.listClause = []
         self.addClause = []
+        self.unit_clause = []
         # Gestion GUI
         self.app = QApplication([])
         self.window = MainWindow()
@@ -30,9 +30,27 @@ class App:
         self.listClause = []
         self.data = self.generator.createDict()
         self.generator.genClause(self.data, self.listClause)
+        if self.solver.heuristic == 4:
+            moms_data = {
+                "2":[],
+                "9":[]
+            }
+            for clause in self.listClause:
+                if len(clause.list_litteraux) == 2:
+                    moms_data["2"].append(clause)
+                elif len(clause.list_litteraux) == 9:
+                    moms_data["9"].append(clause)
+            self.solver.moms_data = moms_data
+
         print("Le nombre de variable propositionnelles est de {} et le nombre de clause est de {}".format(int(self.data.__len__()/2),self.listClause.__len__()))
         if len(self.addClause) > 0:
             self.addClauseForNumber()
+        self.solver.nb_clause = len(self.listClause)
+        self.solver.backtracking = []
+        self.solver.indexBacktracking = -1
+        self.solver.nb_clause_satisfy = 0
+        self.solver.recursivity = 0
+        self.solver.branch_close = 0
 
     def display_result(self, result):
         print("Temps d'execution: %s secondes" % result["time"])
@@ -63,13 +81,13 @@ class App:
 
     def resolve(self):
         # Résolution du sudoku
-        worker = Worker(self.solver.dpll, self.data)
+        worker = Worker(self.solver.dpll, self.data, self.unit_clause)
         worker.signals.result.connect(self.display_result)
         worker.signals.finished.connect(self.thread_complete)
         self.window.threadpool.start(worker)
         
     def addClauseForNumber(self):
-        self.generator.createNumberClause(self.addClause, self.data, self.listClause)
+        self.generator.createNumberClause(self.addClause, self.data, self.unit_clause)
     
     def handle_solve_click(self):
         if not self.window.button_solve_is_clicked:

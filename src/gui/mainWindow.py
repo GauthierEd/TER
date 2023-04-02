@@ -60,6 +60,9 @@ class MainWindow(QMainWindow):
         self.comboBox.addItem("1")
         self.comboBox.addItem("2")
         self.comboBox.addItem("3")
+        self.comboBox.addItem("4")
+        self.comboBox.addItem("5")
+        self.comboBox.addItem("6")
         self.horizontalLayout_6.addWidget(self.comboBox)
 
         self.horizontalLayout_5.addLayout(self.horizontalLayout_6)
@@ -153,10 +156,8 @@ class MainWindow(QMainWindow):
     def handle_save_click(self, list_clause):
         for i in range(9):
             for j in range(9):
-                print(self.gridInput[i][j].text())
                 if self.gridInput[i][j].text():
                     clause = str.format("x {} {} {}",j+1,i+1,self.gridInput[i][j].text())
-                    print(clause)
                     list_clause.append(clause)
                 self.grid[i][j].setText(self.gridInput[i][j].text())
         self.stackedLayout.setCurrentIndex(0)

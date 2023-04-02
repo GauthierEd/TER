@@ -41,7 +41,7 @@ class Worker(QRunnable):
         start_time = time.time()
         start_time_cpu = time.process_time()
         try:
-            result_dpll = self.fn(*self.args, **self.kwargs)
+            result_dpll = self.fn(data=self.args[0], clause_unit=self.args[1])
             end_time = time.time()
             end_time_cpu = time.process_time()
             result = {
