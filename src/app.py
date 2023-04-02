@@ -1,4 +1,5 @@
 from .generator import Generator
+from .Dames import Dames
 from .solver import Solver
 import numpy as np
 from PyQt6.QtWidgets import QApplication
@@ -52,10 +53,32 @@ class App:
         self.solver.recursivity = 0
         self.solver.branch_close = 0
 
+    def dames(self, nbDames:int, all_soluce:bool = False):
+        self.solver.get_all_solution = all_soluce
+        dames = Dames(nbDames)
+        d = dames.createDict()
+        l = []
+        dames.genClause(d,l)
+        res = self.solver.dpll(d)
+        if self.solver.get_all_solution:
+            for data in self.solver.all_solution:
+                print(str(self.reprDames(nbDames, data)) + "\n")
+            print(len(self.solver.all_solution))
+        else:
+            print(self.reprDames(nbDames, res))
+
+    def reprDames(self, size:int, data:dict):
+        m = np.zeros((size,size))
+        for i in range(1,size+1):
+            for j in range(1,size+1):
+                if data[str.format("x {} {}",i,j)]["value"].value:
+                    m[i-1][j-1] = 1
+        return m
+   
     def display_result(self, result):
         print("Temps d'execution: %s secondes" % result["time"])
         print("Temps d'execution cpu: %s secondes" % result["cpu_time"])
-        if not self.solver.get_all_solution and result["dpll"]:
+        if not self.solver.get_all_solution and result["dpll"]:  
             print("Un modele")
         elif self.solver.get_all_solution and len(self.solver.all_solution) > 0:
             print(len(self.solver.all_solution), " modeles")

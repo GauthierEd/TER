@@ -104,7 +104,7 @@ class Solver:
             #self.all_solution.append(deepcopy(data))
             self.all_solution.append([])
             return True
-        
+
         new_litteral = None
         if self.heuristic == 1:
             # On choisit un litteral, on prends le 1er litteral qui n'a pas encore de valeur associé
@@ -195,6 +195,7 @@ class Solver:
         result = self.dpll(data = data, litteral = new_litteral, clause_unit = clause_unit)
         if litteral != None:
             clause_unit = clause_unit[1:]
+
         if result and not self.get_all_solution:
             return result
         
@@ -268,7 +269,7 @@ class Solver:
                 if l.nb_clause_in > 0:
                     l.nb_clause_in -= 1
         data[litt]["value"].nb_clause_in = 0
-                    
+          
         if "!" in litt:
             # Met x à faux
             inv_litt = litt.split("!")[1]
