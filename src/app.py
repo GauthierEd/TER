@@ -37,6 +37,7 @@ class App:
         self.unit_clause = []
         self.data = self.generator.createDict()
         self.generator.genClause(self.data, self.listClause)
+        self.initSolver()
         if self.solver.heuristic == 4:
             moms_data = {
                 "2":[],
@@ -52,7 +53,7 @@ class App:
         print("Le nombre de variable propositionnelles est de {} et le nombre de clause est de {}".format(int(self.data.__len__()/2),self.listClause.__len__()))
         if len(self.addClause) > 0:
             self.addClauseForNumber()
-        self.initSolver()
+        
     
     def createClauseDames(self):
         # Creation des clauses
@@ -60,6 +61,7 @@ class App:
         self.unit_clause = []
         self.data = self.generatorDames.createDict()
         self.generatorDames.genClause(self.data, self.listClause)
+        self.initSolver()
         if self.solver.heuristic == 4:
             moms_data = {
                 "2":[],
@@ -68,12 +70,13 @@ class App:
             for clause in self.listClause:
                 if len(clause.list_litteraux) == 2:
                     moms_data["2"].append(clause)
-                elif len(clause.list_litteraux) == 9:
+                elif len(clause.list_litteraux) == self.generatorDames.size:
                     moms_data[str(self.generatorDames.size)].append(clause)
             self.solver.moms_data = moms_data
-
+        print(len(self.solver.moms_data["2"]))
+        print(len(self.solver.moms_data[str(self.generatorDames.size)]))
         print("Le nombre de variable propositionnelles est de {} et le nombre de clause est de {}".format(int(self.data.__len__()/2),self.listClause.__len__()))
-        self.initSolver()
+        
 
     def initSolver(self):
         self.solver.nb_clause = len(self.listClause)

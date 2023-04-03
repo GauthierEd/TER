@@ -144,10 +144,11 @@ class Solver:
                         break
             maxOccur = 0
             for litteral in smallest_clause.list_litteraux:
-                occur = self.S(smallest_clause,litteral.name)
-                if occur > maxOccur:
-                    maxOccur = occur
-                    new_litteral = litteral.name
+                if litteral.value == None:
+                    occur = self.S(smallest_clause,litteral.name)
+                    if occur > maxOccur:
+                        maxOccur = occur
+                        new_litteral = litteral.name
         elif self.heuristic == 5:
             #DLCS
             maxDLCS = 0
