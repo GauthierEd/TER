@@ -11,7 +11,7 @@ class Dames:
             for y in range(1,self.size+1):
                 name = str.format("x {} {}",x,y)
                 data[name] = {"value": Variable(name), "clause": []}
-                data["!"+name] = {"value": Variable("!"+name,True), "clause": []}
+                data["!"+name] = {"value": Variable("!"+name), "clause": []}
         return data
     
     def genClause(self, data:dict, listClause:list):

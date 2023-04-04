@@ -36,7 +36,7 @@ class Clause:
 
 # Objet qui represente une variable, contient sa valeur et s'il est une négation ou pas
 class Variable:
-    def __init__(self, name, isNot = False):
+    def __init__(self, name):
         # Nom de la variable
         self.name = name
         # Valeur de la variable, None si pas initialisé, 1 pour vrai, -1 pour faux

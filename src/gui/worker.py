@@ -46,8 +46,8 @@ class Worker(QRunnable):
             end_time_cpu = time.process_time()
             result = {
                 "dpll": result_dpll,
-                "time": np.round((end_time - start_time),2),
-                "cpu_time": np.round((end_time_cpu - start_time_cpu),2)
+                "time": (end_time - start_time),
+                "cpu_time": (end_time_cpu - start_time_cpu)
             }
             
         except:

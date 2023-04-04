@@ -1,9 +1,12 @@
 from src.app  import App
 import time
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 if __name__ == '__main__':
     app = App()
-    print("Quel jeu: Sudoku (1) ou Dames (2) ?")
+    print("Quel jeu: Sudoku (1) ou Dames (2) ,etude (3)?")
     choice = input()
     if choice == "1":
         app.game = "Sudoku"
@@ -69,4 +72,15 @@ if __name__ == '__main__':
                 if res:
                     print(app.reprDames(int(size), res))
                 else:
-                    print("Pas de solution")  
+                    print("Pas de solution")
+    elif choice == "3":
+        df = pd.read_csv("./etude.csv")
+        plt.xticks([1,2,3,4,5,6])
+        sns.lineplot(data=df, x="heuristique", y="time", hue="niveau")
+        plt.show()
+        sns.lineplot(data=df, x="heuristique", y="cpu_time", hue="niveau")
+        plt.show()
+        sns.lineplot(data=df, x="heuristique", y="recursivite", hue="niveau")
+        plt.show()
+        sns.lineplot(data=df, x="heuristique", y="branche_close", hue="niveau")
+        plt.show()

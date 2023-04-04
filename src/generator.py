@@ -12,7 +12,7 @@ class Generator:
                 for val in range(1,10):
                     name = str.format("x {} {} {}",x,y,val)
                     data[name] = {"value": Variable(name), "clause": []}
-                    data["!"+name] = {"value": Variable("!"+name,True), "clause": []}
+                    data["!"+name] = {"value": Variable("!"+name), "clause": []}
         return data
 
     def createClause(self, data:dict, listVar:list, listVarNot:list, listC:list):

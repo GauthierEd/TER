@@ -6,8 +6,11 @@ from PyQt6.QtWidgets import QApplication
 from .gui.mainWindow import MainWindow
 from .gui.worker import Worker
 import os
+import time
 from .gui.popUp import PopUp
-from PyQt6.QtWidgets import QDialogButtonBox
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
 
 class App:
     def __init__(self):
@@ -19,6 +22,7 @@ class App:
         self.listClause = []
         self.addClause = []
         self.unit_clause = []
+        self.data_etude = {}
         self.game = "Sudoku"
         # Gestion GUI
         self.app = QApplication([])
@@ -28,6 +32,7 @@ class App:
         self.window.solveButton.clicked.connect(self.handle_solve_click)
         self.window.saveButton.clicked.connect(self.handle_save_click)
         self.window.newButton.clicked.connect(self.handle_new_click)
+        self.window.etudeButton.clicked.connect(self.handle_etude_click)
         self.window.show()
         self.app.exec()
 
@@ -73,8 +78,6 @@ class App:
                 elif len(clause.list_litteraux) == self.generatorDames.size:
                     moms_data[str(self.generatorDames.size)].append(clause)
             self.solver.moms_data = moms_data
-        print(len(self.solver.moms_data["2"]))
-        print(len(self.solver.moms_data[str(self.generatorDames.size)]))
         print("Le nombre de variable propositionnelles est de {} et le nombre de clause est de {}".format(int(self.data.__len__()/2),self.listClause.__len__()))
         
 
@@ -195,7 +198,7 @@ class App:
     
     def handle_solve_click(self):
         if self.game == "Sudoku":
-            if not self.window.button_solve_is_clicked:
+            if not self.window.button_solve_is_clicked and not self.window.button_etude_is_clicked:
                 self.window.button_solve_is_clicked = True
                 all_sol = self.window.checkBox.isChecked()
                 heuristic = self.window.comboBox.currentText()
@@ -218,10 +221,81 @@ class App:
         self.window.handle_save_click(self.addClause)
     
     def handle_new_click(self):
-        if not self.window.button_solve_is_clicked:
+        if not self.window.button_solve_is_clicked and not self.window.button_etude_is_clicked:
             self.addClause = []
             self.window.handle_new_click()
-    
+
+    def handle_etude_click(self):
+        data = self.load_data("sudoku_facile","sudoku_moyen","sudoku_difficile","sudoku_expert","sudoku_diabolique")
+        data_etude = {}
+        result = {}
+        for key, value in data.items():
+            data_heuri = {}
+            for i in range(1,7):
+                data_heuri[str(i)] = []
+            for d in value:
+                for i in range(1,7):
+                    self.solver.set_all_solution(False)
+                    self.solver.set_heuristic(i)
+                    self.addClause = d
+                    self.createClauseSudoku()
+                    start_time = time.time()
+                    start_time_cpu = time.process_time()
+                    self.solver.dpll(data=self.data, clause_unit=self.unit_clause)
+                    end_time = time.time()
+                    end_time_cpu = time.process_time()
+                    data = {
+                        "time": (end_time - start_time),
+                        "cpu_time": (end_time_cpu - start_time_cpu),
+                        "recursivite": self.solver.recursivity,
+                        "branche_close": self.solver.branch_close
+                    }
+                    data_heuri[str(i)].append(data)
+                data_etude[key] = data_heuri
+        for key, value in data_etude.items():
+            temp = {}
+            for h, v in value.items():
+                timeTotal = 0
+                timeCpuTotal = 0
+                recursiviteTotal = 0
+                brancheClose = 0
+                for data in v:
+                    timeTotal += data["time"]
+                    timeCpuTotal += data["cpu_time"]
+                    recursiviteTotal +=  data["recursivite"]
+                    brancheClose += data["branche_close"]
+                temp[h] = {
+                    'time': timeTotal / len(v),
+                    'cpu_time': timeCpuTotal / len(v),
+                    'recursivite': recursiviteTotal / len(v),
+                    'branche_close': brancheClose / len(v)
+                }
+            result[key] = temp
+        levelV = []
+        heuriV = []
+        timeV = []
+        cpu_timeV = []
+        recursivityV = []
+        branche_closeV = []
+        for level, levelValue in result.items():
+            for heuri, heuriValue in levelValue.items():
+                levelV.append(level)
+                heuriV.append(heuri)
+                timeV.append(heuriValue["time"])
+                cpu_timeV.append(heuriValue["cpu_time"])
+                recursivityV.append(heuriValue["recursivite"])
+                branche_closeV.append(heuriValue["branche_close"])
+        df = pd.DataFrame({"niveau": levelV, 
+                                "heuristique": heuriV,
+                                "time": timeV,
+                                "cpu_time": cpu_timeV,
+                                "recursivite": recursivityV,
+                                "branche_close": branche_closeV
+                                })
+        script_dir = os.path.dirname(__file__)
+        abs_file_path = os.path.join(script_dir, "../etude.csv")
+        df.to_csv(abs_file_path, index=False)
+
     def save(self, result):
         script_dir = os.path.dirname(__file__)
         abs_file_path = os.path.join(script_dir, "../solution_"+self.game+".txt")
@@ -233,7 +307,7 @@ class App:
         f.write("Temps d'execution cpu: "+ str(result["time_cpu"]) + " secondes \n")
         f.write("Heuristique: " + str(result["heuristic"]) + "\n")
         f.write("Recursivite: " + str(result["recursivite"]) + "\n")
-        f.write("Branche clause: " + str(result["close"]) +"\n")
+        f.write("Branche close: " + str(result["close"]) +"\n")
         f.write("Nombre de solution: " + str(result["nb_sol"])+"\n")
         if result["solution"]:
             f.write("##############################\n\n")
@@ -263,3 +337,29 @@ class App:
             file.write(sep)
             file.write(rowStr)
         file.write("\n")
+    
+    def load_data(self, *filename):
+        script_dir = os.path.dirname(__file__)
+        data = {}
+        for file in filename:
+            level = file.split("_")[1]
+            abs_file_path = os.path.join(script_dir, "../sudoku/"+file+".txt")
+            f = open(abs_file_path, 'r')
+            all_sudoku = []
+            content = f.readlines()
+            for i in range(0,len(content), 10):
+                sudoku = content[i+1:i+10]
+                all_sudoku.append(self.get_clue_sudoku(sudoku))
+            data[level] = all_sudoku
+        return data
+    
+    def get_clue_sudoku(self, sudoku):
+        all_clue = []
+        for i in range(len(sudoku)):
+            row_split = sudoku[i].split(" ")
+            row_split[-1] = row_split[-1].split("\n")[0]
+            for j in range(len(row_split)):
+                value = int(row_split[j])
+                if value != 0:
+                    all_clue.append("x "+str(j+1)+" "+str(i+1)+" "+str(value))
+        return all_clue

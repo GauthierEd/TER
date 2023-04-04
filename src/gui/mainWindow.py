@@ -9,6 +9,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.threadpool = QThreadPool()
         self.button_solve_is_clicked = False
+        self.button_etude_is_clicked = False
         self.setFixedSize(QSize(600, 600))
         self.centralwidget = QWidget(parent=self)
         self.verticalLayoutWidget_4 = QWidget(parent=self.centralwidget)
@@ -40,6 +41,10 @@ class MainWindow(QMainWindow):
         self.solveButton = QPushButton("Solve")
         self.solveButton.setFont(font)
         self.horizontalLayout_3.addWidget(self.solveButton)
+
+        self.etudeButton = QPushButton("Etude")
+        self.etudeButton.setFont(font)
+        self.horizontalLayout_3.addWidget(self.etudeButton)
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_3)
 
@@ -145,11 +150,10 @@ class MainWindow(QMainWindow):
         for i in range(9):
             for j in range(9):
                 self.grid[i][j].setText("")
-                self.gridInput[i][j].clear()
-        
+                self.gridInput[i][j].clear()  
 
     def handle_edit_click(self):
-        if not self.button_solve_is_clicked:
+        if not self.button_solve_is_clicked and not self.button_etude_is_clicked:
             self.stackedLayout.setCurrentIndex(1)
 
     def handle_save_click(self, list_clause):
