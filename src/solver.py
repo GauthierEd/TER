@@ -129,6 +129,7 @@ class Solver:
                     if vector > maxVector:
                         maxVector = vector
                         new_litteral = key
+                        
         elif self.heuristic == 4:
             # MOMS Heuristic
             # smallest_clause
@@ -177,18 +178,18 @@ class Solver:
                 key = keys[i]
                 notKey = keys[i+1]
                 if data[key]["value"].value == None:
-                    occurPos = 0
-                    occurNeg = 0
-                    for clause in data[key]["clause"]:
+                    occurPos = data[key]["value"].nb_clause_in
+                    occurNeg = data[notKey]["value"].nb_clause_in
+                    """for clause in data[key]["clause"]:
                         if clause.nb_litt_satisfied == 0:
                             occurPos += 1
                     for clause in data[notKey]["clause"]:
                         if clause.nb_litt_satisfied == 0:
-                            occurNeg += 1
+                            occurNeg += 1"""
                     if max(occurPos, occurNeg) > maxDLIS:
                         maxDLIS = max(occurPos, occurNeg)
                         new_litteral = key
-        
+          
         if "!" in new_litteral:
             new_litteral = new_litteral.split("!")[1]  
         

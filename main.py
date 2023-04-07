@@ -6,7 +6,7 @@ import seaborn as sns
 
 if __name__ == '__main__':
     app = App()
-    print("Quel jeu: Sudoku (1) ou Dames (2) ,etude (3)?")
+    print("Quel jeu: Sudoku (1) ou Dames (2) ,etude sudoku (3), etude dame (4) ?")
     choice = input()
     if choice == "1":
         app.game = "Sudoku"
@@ -74,6 +74,7 @@ if __name__ == '__main__':
                 else:
                     print("Pas de solution")
     elif choice == "3":
+        app.handle_etude_click()
         df = pd.read_csv("./etude.csv")
         plt.xticks([1,2,3,4,5,6])
         sns.lineplot(data=df, x="heuristique", y="time", hue="niveau")
@@ -83,4 +84,17 @@ if __name__ == '__main__':
         sns.lineplot(data=df, x="heuristique", y="recursivite", hue="niveau")
         plt.show()
         sns.lineplot(data=df, x="heuristique", y="branche_close", hue="niveau")
+        plt.show()
+    elif choice == "4":
+        app.game = "Dames"
+        app.etude_dame()
+        df = pd.read_csv("./etude_dame.csv")
+        plt.xticks([1,2,3,4,5,6])
+        sns.lineplot(data=df, x="heuristique", y="time", hue="n", palette="deep")
+        plt.show()
+        sns.lineplot(data=df, x="heuristique", y="cpu_time", hue="n", palette="deep")
+        plt.show()
+        sns.lineplot(data=df, x="heuristique", y="recursivite", hue="n", palette="deep")
+        plt.show()
+        sns.lineplot(data=df, x="heuristique", y="branche_close", hue="n", palette="deep")
         plt.show()

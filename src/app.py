@@ -225,16 +225,67 @@ class App:
             self.addClause = []
             self.window.handle_new_click()
 
+    def etude_dame(self):
+        data_etude = {}
+        for n in range(7,14):
+            data_heuri = {}
+            self.generatorDames.size = n
+            for i in range(1,7):
+                self.solver.set_all_solution(False)
+                self.solver.set_heuristic(i)
+                self.createClauseDames()
+                start_time = time.time()
+                start_time_cpu = time.process_time()
+                self.solver.dpll(data=self.data)
+                end_time = time.time()
+                end_time_cpu = time.process_time()
+                data = {
+                    "time": (end_time - start_time),
+                    "cpu_time": (end_time_cpu - start_time_cpu),
+                    "recursivite": self.solver.recursivity,
+                    "branche_close": self.solver.branch_close
+                }
+                data_heuri[str(i)] = data
+                data_etude[n] = data_heuri
+        nV = []
+        heuriV = []
+        timeV = []
+        cpu_timeV = []
+        recursivityV = []
+        branche_closeV = []
+        for n, nValue in data_etude.items():
+            for heuri, heuriValue in nValue.items():
+                nV.append(n)
+                heuriV.append(heuri)
+                timeV.append(heuriValue["time"])
+                cpu_timeV.append(heuriValue["cpu_time"])
+                recursivityV.append(heuriValue["recursivite"])
+                branche_closeV.append(heuriValue["branche_close"])
+        df = pd.DataFrame({"n": nV, 
+                            "heuristique": heuriV,
+                            "time": timeV,
+                            "cpu_time": cpu_timeV,
+                            "recursivite": recursivityV,
+                            "branche_close": branche_closeV
+                        })
+        script_dir = os.path.dirname(__file__)
+        abs_file_path = os.path.join(script_dir, "../etude_dame.csv")
+        df.to_csv(abs_file_path, index=False)
+
     def handle_etude_click(self):
-        data = self.load_data("sudoku_facile","sudoku_moyen","sudoku_difficile","sudoku_expert","sudoku_diabolique")
+        data = self.load_data("sudoku_vide", "sudoku_facile","sudoku_moyen","sudoku_difficile","sudoku_expert","sudoku_diabolique")
         data_etude = {}
         result = {}
         for key, value in data.items():
             data_heuri = {}
-            for i in range(1,7):
+            if key == "vide":
+                max = 6
+            else:
+                max = 7
+            for i in range(1,max):
                 data_heuri[str(i)] = []
             for d in value:
-                for i in range(1,7):
+                for i in range(1,max):
                     self.solver.set_all_solution(False)
                     self.solver.set_heuristic(i)
                     self.addClause = d
