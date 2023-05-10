@@ -42,10 +42,6 @@ class MainWindow(QMainWindow):
         self.solveButton.setFont(font)
         self.horizontalLayout_3.addWidget(self.solveButton)
 
-        self.etudeButton = QPushButton("Etude")
-        self.etudeButton.setFont(font)
-        self.horizontalLayout_3.addWidget(self.etudeButton)
-
         self.verticalLayout_4.addLayout(self.horizontalLayout_3)
 
         self.horizontalLayout_5 = QHBoxLayout()

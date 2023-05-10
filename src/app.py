@@ -32,7 +32,6 @@ class App:
         self.window.solveButton.clicked.connect(self.handle_solve_click)
         self.window.saveButton.clicked.connect(self.handle_save_click)
         self.window.newButton.clicked.connect(self.handle_new_click)
-        self.window.etudeButton.clicked.connect(self.handle_etude_click)
         self.window.show()
         self.app.exec()
 
@@ -278,10 +277,7 @@ class App:
         result = {}
         for key, value in data.items():
             data_heuri = {}
-            if key == "vide":
-                max = 6
-            else:
-                max = 7
+            max = 7
             for i in range(1,max):
                 data_heuri[str(i)] = []
             for d in value:

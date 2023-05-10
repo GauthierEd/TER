@@ -37,7 +37,6 @@ class Solver:
             litteral = litteral.split("!")[1]  
         return (self.f(clause,litteral) + self.f(clause,'!'+litteral)) * pow(2,k) + (self.f(clause,litteral) * self.f(clause,"!"+litteral))
 
-    
     def f(self, clause, litteral):
         # Renvoie le nombre d'occurence d'un litteral dans toutes les plus petites
         # clauses non satisfaites et non unitaire
